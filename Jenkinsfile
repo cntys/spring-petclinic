@@ -1,16 +1,22 @@
 pipeline {
   agent none
   stages {
-    stage('Maven Install') {
-      agent {
-        docker {
-          image 'maven:3-alpine'
-        }
-      }
-      steps {
-        sh 'mvn clean package -Dskiptests'
-      }
-    } 
+
+    stage('Initialize'){
+        def dockerHome = tool 'myDocker'
+        def mavenHome  = tool 'myMaven'
+        env.PATH = "${mavenHome}/bin:${env.PATH}"
+
+        echo env.PATH
+    }
+
+    stage('Checkout') {
+        checkout scm
+    }
+
+    stage('Build'){
+        sh "mvn clean install"
+    }
 
     stage('Docker Build') {
       agent any
