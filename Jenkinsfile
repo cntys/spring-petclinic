@@ -1,40 +1,22 @@
 pipeline {
-  agent any
+  agent none
   stages {
-
-    stage('Initialize'){
-        
-
-        steps{
-            def dockerHome = tool 'myDocker'
-            def mavenHome  = tool 'myMaven'
-            env.PATH = "${mavenHome}/bin:${env.PATH}"
-
-            echo env.PATH
-
+    stage('Maven Install') {
+      agent {
+        docker {
+            image 'maven:3-alpine'
+            args '-v /root/.m2:/root/.m2'
         }
+      }
+      steps {
+        sh 'mvn -B -DskipTests clean package'
+      }
     }
-
-    stage('Checkout') {
-        
-        steps{
-            checkout scm
-        }
-    }
-
-    stage('Build'){
-        
-        steps{
-            sh "mvn clean install"
-        }
-    }
-
     stage('Docker Build') {
-      
+      agent any
       steps {
         sh 'docker build -t shanem/spring-petclinic:latest .'
       }
     }
-
   }
 }
